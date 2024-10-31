@@ -38,80 +38,58 @@ from apache_beam.options.pipeline_options import SetupOptions
 #     return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
 
 class candidates_to_tfexample(beam.DoFn):
-    '''
-    convert bigqury rows to tf.examples
-    '''
+    """convert bigqury rows to tf.examples
+    """
     def __init__(self, mode):
-        """
-          Initialization
+        """Initialization
         """
         self.mode = mode
     
     
     def process(self, data):
-        """
-        Convert BQ row to tf-example
+        """Convert BQ row to tf-example
         """
         
         example = tf.train.Example(
             features=tf.train.Features(
                 feature = {
-                    # context sequence item features
-                    "context_movie_id":
-                        tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["context_movie_id"])),
-                    "context_movie_rating":
-                        tf.train.Feature(
-                            float_list=tf.train.FloatList(value=data["context_movie_rating"])),
-                    "context_rating_timestamp":
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=data["context_timestamp"])),
-                    "context_movie_genre":
-                        tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["context_movie_genres"])),
-                    "context_movie_year":
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=data["context_movie_year"])),
-                    "context_movie_title":
-                        tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["context_movie_title"])),
-
-                    # target/label item features
                     "target_movie_id":
                         tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["target_movie_id"])),
-                    "target_movie_rating":
-                        tf.train.Feature(
-                            float_list=tf.train.FloatList(value=data["target_movie_rating"])),
-                    "target_rating_timestamp":
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=data["target_rating_timestamp"])),
-                    "target_movie_genres":
-                        tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["target_movie_genres"])),
-                    "target_movie_year":
-                        tf.train.Feature(
-                            int64_list=tf.train.Int64List(value=data["target_movie_year"])),
+                            bytes_list=tf.train.BytesList(
+                                value=[
+                                    tf.compat.as_bytes(
+                                        str(data["target_movie_id"])
+                                    )
+                                ]
+                            )
+                        ),
                     "target_movie_title":
                         tf.train.Feature(
-                            bytes_list=tf.train.BytesList(value=data["target_movie_title"])),
-
-                    # # global context user features
-                    # "user_id":
+                            bytes_list=tf.train.BytesList(
+                                value=[
+                                    tf.compat.as_bytes(str(data["target_movie_title"]))])),
+                    "target_movie_year":
+                        tf.train.Feature(
+                            int64_list=tf.train.Int64List(
+                                value=[
+                                    data["target_movie_year"]
+                                ]
+                            )
+                        ),
+                    "target_movie_genres":
+                        tf.train.Feature(
+                            bytes_list=tf.train.BytesList(
+                                value=[
+                                    str(v).encode('utf-8') for v in data["target_movie_genres"]
+                                ]
+                            )
+                        ),
+                    # "target_movie_rating":
                     #     tf.train.Feature(
-                    #         bytes_list=tf.train.BytesList(value=data["user_id"])),
-                    # "user_gender":
+                    #         float_list=tf.train.FloatList(value=data["target_movie_rating"])),
+                    # "target_rating_timestamp":
                     #     tf.train.Feature(
-                    #         bytes_list=tf.train.BytesList(value=data["user_gender"])),
-                    # "user_age":
-                    #     tf.train.Feature(
-                    #         int64_list=tf.train.Int64List(value=data["user_age"])),
-                    # "user_occupation_text":
-                    #     tf.train.Feature(
-                    #         bytes_list=tf.train.BytesList(value=data["user_occupation_text"])),
-                    # "user_zip_code":
-                    #     tf.train.Feature(
-                    #         bytes_list=tf.train.BytesList(value=data["user_zip_code"])),
+                    #         int64_list=tf.train.Int64List(value=data["target_rating_timestamp"])),
                 }
             )
         )
@@ -129,9 +107,9 @@ def run(args):
     # f"{env_config.BUCKET_NAME}", 
     # prefix=f'{env_config.EXAMPLE_GEN_GCS_PATH}/val/', 
     
-    # BQ_TABLE = args['bq_source_table']
+    BQ_TABLE = args['bq_source_table']
     
-    SOURCE_FILE_PATTERN = args["source_file_pattern"] # TODO (wip)
+    # SOURCE_FILE_PATTERN = args["source_file_pattern"]
     
     CANDIDATE_SINK = args['candidate_sink']
     RUNNER = args['runner']
@@ -152,7 +130,7 @@ def run(args):
     )
     
     # "gs://jt-towers-v1-hybrid-vertex-bucket/data/movielens/m1m/train/ml1m-006-of-008.tfrecord"
-    SOURCE_FILE_PATTERN = "gs://jt-towers-v1-hybrid-vertex-bucket/data/movielens/m1m/*.tfrecord"
+    # SOURCE_FILE_PATTERN = "gs://jt-towers-v1-hybrid-vertex-bucket/data/movielens/m1m/*.tfrecord"
 
     with beam.Pipeline(RUNNER, options=pipeline_options) as pipeline:
         (pipeline 

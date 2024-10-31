@@ -96,6 +96,18 @@ def full_parse(data):
     data = tf.data.TFRecordDataset(data)
     return data
 
+# parse candidates only
+candidate_features = {
+    'target_movie_id': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+    'target_movie_genre': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+    'target_movie_year': tf.io.FixedLenFeature(shape=(), dtype=tf.int64),
+    'target_movie_title': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+}
+def _parse_candidates_fn(example_proto):
+    return tf.io.parse_single_example(
+        example_proto, candidate_features
+    )
+
 def get_dictionary_lookup_by_tf_data_key(key, dataset) -> Dict:
     tensor = dataset.map(lambda x: x[key])
     unique_elems = set()

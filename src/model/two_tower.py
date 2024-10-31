@@ -361,29 +361,29 @@ class Candidate_Tower(tf.keras.Model):
             ], name="target_mv_id_emb_model"
         )
 
-        # Feature: target_movie_rating
-        self.target_mv_rating_embedding = tf.keras.Sequential(
-            [
-                tf.keras.layers.Discretization([0.0,1.0,2.0,3.0,4.0,5.0]),
-                tf.keras.layers.Embedding(
-                    input_dim=6 + 1, 
-                    output_dim=embedding_dim,
-                    name="target_mv_rating_emb_layer",
-                ),
-            ], name="target_mv_rating_emb_model"
-        )
+        # # Feature: target_movie_rating
+        # self.target_mv_rating_embedding = tf.keras.Sequential(
+        #     [
+        #         tf.keras.layers.Discretization([0.0,1.0,2.0,3.0,4.0,5.0]),
+        #         tf.keras.layers.Embedding(
+        #             input_dim=6 + 1, 
+        #             output_dim=embedding_dim,
+        #             name="target_mv_rating_emb_layer",
+        #         ),
+        #     ], name="target_mv_rating_emb_model"
+        # )
 
-        # Feature: target_rating_timestamp
-        self.target_rating_ts_embedding = tf.keras.Sequential(
-            [
-                tf.keras.layers.Discretization(vocab_dict["timestamp_buckets"].tolist()),
-                tf.keras.layers.Embedding(
-                    input_dim=len(vocab_dict["timestamp_buckets"]) + 1, 
-                    output_dim=embedding_dim,
-                    name="target_rating_ts_emb_layer",
-                ),
-            ], name="target_rating_ts_emb_model"
-        )
+        # # Feature: target_rating_timestamp
+        # self.target_rating_ts_embedding = tf.keras.Sequential(
+        #     [
+        #         tf.keras.layers.Discretization(vocab_dict["timestamp_buckets"].tolist()),
+        #         tf.keras.layers.Embedding(
+        #             input_dim=len(vocab_dict["timestamp_buckets"]) + 1, 
+        #             output_dim=embedding_dim,
+        #             name="target_rating_ts_emb_layer",
+        #         ),
+        #     ], name="target_rating_ts_emb_model"
+        # )
 
         # Feature: target_movie_genres
         self.target_mv_genre_embedding = tf.keras.Sequential(
@@ -510,8 +510,8 @@ class Candidate_Tower(tf.keras.Model):
         all_embs = tf.concat(
             [
                 self.target_mv_id_embedding(data["target_movie_id"]),
-                self.target_mv_rating_embedding(data["target_movie_rating"]),
-                self.target_rating_ts_embedding(data["target_rating_timestamp"]),
+                # self.target_mv_rating_embedding(data["target_movie_rating"]),
+                # self.target_rating_ts_embedding(data["target_rating_timestamp"]),
                 self.target_mv_genre_embedding(data["target_movie_genres"]),
                 self.target_mv_year_embedding(data["target_movie_year"]),
                 self.target_mv_title_embedding(data["target_movie_title"]),
