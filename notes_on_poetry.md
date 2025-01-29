@@ -1,15 +1,15 @@
 # Poetry
 
 
-Follow the below steps from a Vertex AI Workbench terminal
+Follow the below steps from a Vertex AI Workbench terminal. See [documentation](https://python-poetry.org/docs/dependency-specification/#caret-requirements) for details
 
 
 ## 1. create new conda environment
 
 
 ```
-export ENV_NAME=py_31016_v7
-export ENV_DISPLAY=py_310_tf211
+export ENV_NAME=py310_tf211_v1
+export ENV_DISPLAY=py310_tf211_v1
 
 echo $ENV_NAME
 echo $ENV_DISPLAY
@@ -17,7 +17,7 @@ echo $ENV_DISPLAY
 conda create -n $ENV_NAME -y python=3.10.16
 conda activate $ENV_NAME
 conda install pip
-pip install -U poetry
+pip install -U poetry ipykernel packaging
 ```
 
 *expand for more...*
@@ -27,58 +27,6 @@ pip install -U poetry
 
 Add custom `conda` environment as a [kernel](https://jupyterlab.readthedocs.io/en/stable/user/documents_kernels.html) for Vertex AI Workbench instance(s)
 
-```
-poetry add ipykernel
-```
-
-</details>
-
-
-<details>
-  <summary>dependency errors re: `setuptools`</summary>
-  
-install `setuptools` with `poetry` or `pip`?
-    
-```
-poetry add setuptools
-
-pip install -U pip setuptools
-```
-*if `pip`, check version compat and upgrade/downgrade as needed*
-
-</details>
-
-
-<details>
-  <summary>dependency errors re: `typing_extensions`</summary>
-
-```
-pip install -U --force-reinstall typing_extensions
->> tensorflow-federated (0.87.0) depends on typing-extensions (>=4.5.0,<4.6.dev0)
->> tensorflow-federated (>=0.87.0,<0.88.0) requires typing-extensions (>=4.5.0,<4.6.dev0)
-```
-
-</details>
-
-
-<details>
-  <summary>general `pip` tips</summary>
-   
-1. Force `pip` to reinstall current version:
-
-> ```
-pip install --force-reinstall <package>==VERSION
-> ```
-
-2. When upgrading, reinstalls all packages even if they are already up-to-date i.e., ignore the installed packages (reinstalling instead)
-
-> ```
-pip install -I <package>
-pip install --ignore-installed <package>
-> ```
-
-3. Add `--no-deps` to avoid reinstalling dependencies
-    
 </details>
 
 
@@ -86,7 +34,7 @@ pip install --ignore-installed <package>
 
 
 ```
-export DIR_NAME=poetic-dirs
+export DIR_NAME=poetry_dir
 mkdir $DIR_NAME
 cd $DIR_NAME
 ```
@@ -116,7 +64,7 @@ Compatible Python versions [>=3.10]:
 
 2. Find this line: `requires-python = ">=3.10"` 
 
-3. Add a max version to create a range: `requires-python = ">=3.10, <4.0"`
+3. Add a max version to create a range: `requires-python = ">=3.10, <3.13"`
 
 
 
@@ -128,11 +76,13 @@ See how poetry handles no version specs
 * tf == 2.11.0
 
 ```
-poetry add google-cloud-aiplatform
-poetry add google-cloud-storage
-poetry add tensorflow-recommenders
-poetry add tensorflow[and-cuda]
+poetry add tensorflow[and-cuda]==2.11.0
+poetry add tensorflow-recommenders==0.7.2
 poetry add numba
+poetry add "google-cloud-aiplatform>=1.60.0"
+poetry add pandas
+poetry add "numpy@^1.24.0"
+poetry add "scann@^1.2.9"
 ```
 
 
@@ -149,12 +99,7 @@ python -m ipykernel install --prefix "${DL_ANACONDA_ENV_HOME}" --name $ENV_NAME 
 After reloading the Workbench instance (`ctrl + r`), you should see `$ENV_DISPLAY` available as a notebook kernel 
 
 
-
 # Notes
-
-
-## TODOs 
-* is it easier to just enter the correct version range in Step 2's `interactive mode`?
 
 
 ### version constraints
