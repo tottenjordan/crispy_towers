@@ -664,7 +664,7 @@ def generate_examples_from_single_timeline(
             "target_rating_timestamp":
                 tf.train.Feature(
                     int64_list=tf.train.Int64List(value=[label_movie_timestamp])),
-            "target_movie_genres":
+            "target_movie_genre":
                 tf.train.Feature(
                     bytes_list=tf.train.BytesList(value=label_movie_genres)),
             "target_movie_year":

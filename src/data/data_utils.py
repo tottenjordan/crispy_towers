@@ -31,7 +31,7 @@ MOVIE_FEATURE_NAMES = [
     'target_movie_id',
     'target_movie_title',
     'target_movie_year',
-    'target_movie_genres',
+    'target_movie_genre',
     # 'target_movie_tags',
 ]
 # TARGET_FEATURE_NAME = "user_rating"
@@ -74,7 +74,7 @@ feature_description = {
     'target_movie_id': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
     'target_movie_rating': tf.io.FixedLenFeature(shape=(), dtype=tf.float32),
     'target_rating_timestamp': tf.io.FixedLenFeature(shape=(), dtype=tf.int64),
-    'target_movie_genres': tf.io.FixedLenFeature(shape=(env_config.MAX_GENRE_LENGTH), dtype=tf.string),
+    # 'target_movie_genre': tf.io.FixedLenFeature(shape=(env_config.MAX_GENRE_LENGTH), dtype=tf.string),
     'target_movie_year': tf.io.FixedLenFeature(shape=(), dtype=tf.int64),
     'target_movie_title': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
 
@@ -99,7 +99,7 @@ def full_parse(data):
 # parse candidates only
 candidate_features = {
     'target_movie_id': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
-    'target_movie_genre': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
+    # 'target_movie_genre': tf.io.FixedLenFeature(shape=(env_config.MAX_GENRE_LENGTH), dtype=tf.string),
     'target_movie_year': tf.io.FixedLenFeature(shape=(), dtype=tf.int64),
     'target_movie_title': tf.io.FixedLenFeature(shape=(), dtype=tf.string),
 }

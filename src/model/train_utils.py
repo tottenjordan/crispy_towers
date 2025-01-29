@@ -3,7 +3,8 @@ import logging
 import numpy as np
 from typing import Optional
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import tensorflow as tf
 
 from google.cloud import storage
@@ -148,15 +149,10 @@ class UploadTBLogsBatchEnd(tf.keras.callbacks.Callback):
 # upload files to Google Cloud Storage
 def upload_blob(bucket_name, source_file_name, destination_blob_name, project_id):
     """Uploads a file to the bucket."""
-    # bucket_name = "your-bucket-name" (no 'gs://')
-    # source_file_name = "local/path/to/file" (file to upload)
-    # destination_blob_name = "folder/paths-to/storage-object-name"
     storage_client = storage.Client(project=project_id)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
-
     blob.upload_from_filename(source_file_name)
-
     print(
         f"File {source_file_name} uploaded to {destination_blob_name}."
     )
