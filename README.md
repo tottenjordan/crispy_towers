@@ -1,9 +1,15 @@
 # crispy_towers
 implementing TFRS on Google Cloud's Vertex AI platform
 
-> `pip install -r ./src/requirements.txt`
-
 <img src='imgs/deep_fried_lotr.png'>
+
+
+## getting started
+
+
+1. [env_config.py](env_config.py) - edit these
+2. [00-env-setup.ipynb](00-env-setup.ipynb) - install packages with poetry
+3. [00_data_prep.ipynb](notebooks/00_data_prep.ipynb) - prepare movielens dataset
 
 
 # GPUs
