@@ -1,0 +1,24 @@
+[project]
+name = "poetry-dir"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "jordan",email = "jordantotten@google.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10, <3.13"
+dependencies = [
+    "tensorflow[and-cuda] (==2.11.0)",
+    "tensorflow-recommenders (==0.7.2)",
+    "numba (>=0.61.0,<0.62.0)",
+    "google-cloud-aiplatform (>=1.60.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "numpy (>=1.24.0,<2.0.0)",
+    "bigquery (>=0.0.45,<0.0.46)",
+    "scann (>=1.2.9,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
