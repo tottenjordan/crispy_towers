@@ -8,7 +8,8 @@ from typing import Dict, Tuple
 
 # tensorflow
 # os.environ['TF_USE_LEGACY_KERAS'] = '1'
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
@@ -150,7 +151,7 @@ class UserContext_Tower(tf.keras.Model):
                     output_dim=embedding_dim,
                     name="context_mv_id_emb_layer",
                 ),
-                # tf.keras.layers.GlobalAveragePooling1D(name="context_mv_id_1d"),
+                tf.keras.layers.GlobalAveragePooling1D(name="context_mv_id_1d"),
             ], name="context_mv_id_emb_model"
         )
         
@@ -163,6 +164,7 @@ class UserContext_Tower(tf.keras.Model):
                     output_dim=embedding_dim,
                     name="context_mv_rating_emb_layer",
                 ),
+                tf.keras.layers.GlobalAveragePooling1D(name="context_mv_rating_1d")
             ], name="context_mv_rating_emb_model"
         )
         
@@ -175,31 +177,28 @@ class UserContext_Tower(tf.keras.Model):
                     output_dim=embedding_dim,
                     name="context_rating_ts_emb_layer",
                 ),
+                tf.keras.layers.GlobalAveragePooling1D(name="context_rating_ts_1d")
             ], name="context_rating_ts_emb_model"
         )
         
-        # Feature: context_movie_genre
-        self.context_mv_genre_embedding = tf.keras.Sequential(
-            [
-                tf.keras.layers.TextVectorization(
-                    # max_tokens=max_tokens,
-                    ngrams=2, 
-                    vocabulary=vocab_dict['movie_genre'],
-                    # vocabulary=np.array([vocab_dict['movie_genre']]).flatten(),
-                    # output_mode='int',
-                    # output_sequence_length=env_config.MAX_GENRE_LENGTH,
-                    name="context_mv_genre_textvectorizor"
-                ),
-                tf.keras.layers.Embedding(
-                    input_dim=max_tokens, # + 1, 
-                    output_dim=embedding_dim,
-                    name="context_mv_genre_emb_layer",
-                    mask_zero=False
-                ),
-                tf.keras.layers.Reshape([-1, env_config.MAX_GENRE_LENGTH, embedding_dim]),
-                tf.keras.layers.GlobalAveragePooling2D(name="context_mv_genre_2d"),
-            ], name="context_mv_genre_emb_model"
-        )
+        # # # Feature: context_movie_genre
+        # self.context_mv_genre_embedding = tf.keras.Sequential(
+        #     [
+        #         tf.keras.layers.TextVectorization(
+        #             ngrams=2, 
+        #             vocabulary=vocab_dict['movie_genre'],
+        #             name="context_mv_genre_textvectorizor"
+        #         ),
+        #         tf.keras.layers.Embedding(
+        #             input_dim=max_tokens, # + 1, 
+        #             output_dim=embedding_dim,
+        #             name="context_mv_genre_emb_layer",
+        #             mask_zero=False
+        #         ),
+        #         tf.keras.layers.Reshape([-1, env_config.MAX_GENRE_LENGTH, embedding_dim]),
+        #         tf.keras.layers.GlobalAveragePooling2D(name="context_mv_genre_2d"),
+        #     ], name="context_mv_genre_emb_model"
+        # )
    
         # Feature: context_movie_year
         self.context_mv_year_embedding = tf.keras.Sequential(
@@ -210,7 +209,7 @@ class UserContext_Tower(tf.keras.Model):
                     output_dim=embedding_dim,
                     name="context_mv_year_emb_layer",
                 ),
-                # tf.keras.layers.GlobalAveragePooling1D(name="context_mv_year_1d"),
+                tf.keras.layers.GlobalAveragePooling1D(name="context_mv_year_1d"),
             ], name="context_mv_year_emb_model"
         )
 
@@ -218,12 +217,8 @@ class UserContext_Tower(tf.keras.Model):
         self.context_mv_title_embedding = tf.keras.Sequential(
             [
                 tf.keras.layers.TextVectorization(
-                    # max_tokens=max_tokens,
-                    ngrams=2, 
+                    # ngrams=2, 
                     vocabulary=vocab_dict['movie_title'],
-                    # vocabulary=np.array([vocab_dict['movie_title']]).flatten(),
-                    # output_mode='int',
-                    # output_sequence_length=env_config.MAX_CONTEXT_LENGTH,
                     name="context_mv_title_textvectorizor"
                 ),
                 tf.keras.layers.Embedding(
@@ -245,12 +240,12 @@ class UserContext_Tower(tf.keras.Model):
             self._cross_layer = tfrs.layers.dcn.Cross(
                 projection_dim=projection_dim,
                 kernel_initializer="glorot_uniform", 
-                name="candidate_cross_layer"
+                name="query_cross_layer"
             )
         else:
             self._cross_layer = None
 
-        self.dense_layers = tf.keras.Sequential(name="candidate_dense_layers")
+        self.dense_layers = tf.keras.Sequential(name="query_dense_layers")
         
         # Use the ReLU activation for all but the last layer.
         for layer_size in layer_sizes[:-1]:
@@ -306,12 +301,20 @@ class UserContext_Tower(tf.keras.Model):
                 self.user_age_embedding(data['user_age']),
                 self.user_occ_embedding(data['user_occupation_text']),
                 self.user_zip_embedding(data['user_zip_code']),
-                self.context_mv_id_embedding(data['context_movie_id']),
-                self.context_mv_rating_embedding(data['context_movie_rating']),
-                self.context_rating_ts_embedding(data['context_rating_timestamp']),
-                self.context_mv_genre_embedding(data['context_movie_genre']),
-                self.context_mv_year_embedding(data['context_movie_year']),
-                self.context_mv_title_embedding(data['context_movie_title']),
+                # self.context_mv_id_embedding(data['context_movie_id']),
+                self.context_mv_id_embedding(tf.reshape(data['context_movie_id'], [-1, env_config.MAX_CONTEXT_LENGTH])),
+                # self.context_mv_rating_embedding(data['context_movie_rating']),
+                self.context_mv_rating_embedding(tf.reshape(data['context_movie_rating'], [-1, env_config.MAX_CONTEXT_LENGTH])),
+                # self.context_rating_ts_embedding(data['context_rating_timestamp']),
+                self.context_rating_ts_embedding(tf.reshape(data["context_rating_timestamp"], [-1, env_config.MAX_CONTEXT_LENGTH])),
+                
+                # self.context_mv_genre_embedding(data['context_movie_genre']),
+                # self.context_mv_genre_embedding(tf.reshape(data["context_movie_genre"], [-1])),
+                
+                # self.context_mv_year_embedding(data['context_movie_year']),
+                self.context_mv_year_embedding(tf.reshape(data['context_movie_year'], [-1, env_config.MAX_CONTEXT_LENGTH])),
+                # self.context_mv_title_embedding(data['context_movie_title']),
+                self.context_mv_title_embedding(tf.reshape(data['context_movie_title'], [-1, env_config.MAX_CONTEXT_LENGTH, 1])),
                 
             ], axis=1
         )
@@ -387,28 +390,24 @@ class Candidate_Tower(tf.keras.Model):
         #     ], name="target_rating_ts_emb_model"
         # )
 
-        # Feature: target_movie_genres
-        self.target_mv_genre_embedding = tf.keras.Sequential(
-            [
-                tf.keras.layers.TextVectorization(
-                    # max_tokens=max_tokens,
-                    ngrams=2, 
-                    vocabulary=vocab_dict['movie_genre'],
-                    # vocabulary=np.array([vocab_dict['movie_genre']]).flatten(),
-                    # output_mode='int',
-                    # output_sequence_length=env_config.MAX_GENRE_LENGTH,
-                    name="target_mv_genre_textvectorizor"
-                ),
-                tf.keras.layers.Embedding(
-                    input_dim=max_tokens, # + 1, 
-                    output_dim=embedding_dim,
-                    name="target_mv_genre_emb_layer",
-                    mask_zero=False
-                ),
-                tf.keras.layers.Reshape([-1, env_config.MAX_GENRE_LENGTH, embedding_dim]),
-                tf.keras.layers.GlobalAveragePooling2D(name="target_mv_genre_2d"),
-            ], name="target_mv_genre_emb_model"
-        )
+        # # Feature: target_movie_genres
+        # self.target_mv_genre_embedding = tf.keras.Sequential(
+        #     [
+        #         tf.keras.layers.TextVectorization(
+        #             ngrams=2, 
+        #             vocabulary=vocab_dict['movie_genre'],
+        #             name="target_mv_genre_textvectorizor"
+        #         ),
+        #         tf.keras.layers.Embedding(
+        #             input_dim=max_tokens, # + 1, 
+        #             output_dim=embedding_dim,
+        #             name="target_mv_genre_emb_layer",
+        #             mask_zero=False
+        #         ),
+        #         tf.keras.layers.Reshape([-1, env_config.MAX_GENRE_LENGTH, embedding_dim]),
+        #         tf.keras.layers.GlobalAveragePooling2D(name="target_mv_genre_2d"),
+        #     ], name="target_mv_genre_emb_model"
+        # )
 
         # Feature: target_movie_year
         self.target_mv_year_embedding = tf.keras.Sequential(
@@ -424,16 +423,11 @@ class Candidate_Tower(tf.keras.Model):
         )
 
         # Feature: target_movie_title
-        # Feature: context_movie_title
         self.target_mv_title_embedding = tf.keras.Sequential(
             [
                 tf.keras.layers.TextVectorization(
-                    # max_tokens=max_tokens,
                     ngrams=2, 
                     vocabulary=vocab_dict['movie_title'],
-                    # vocabulary=np.array([vocab_dict['movie_title']]).flatten(),
-                    # output_mode='int',
-                    # output_sequence_length=env_config.MAX_CONTEXT_LENGTH,
                     name="target_mv_title_textvectorizor"
                 ),
                 tf.keras.layers.Embedding(
@@ -442,8 +436,9 @@ class Candidate_Tower(tf.keras.Model):
                     name="target_mv_title_emb_layer",
                     mask_zero=False
                 ),
-                tf.keras.layers.Reshape([-1, env_config.MAX_CONTEXT_LENGTH, embedding_dim]),
-                tf.keras.layers.GlobalAveragePooling2D(name="target_mv_title_2d"),
+                # tf.keras.layers.Reshape([-1, env_config.MAX_CONTEXT_LENGTH, embedding_dim]),
+                # tf.keras.layers.GlobalAveragePooling2D(name="target_mv_title_2d"),
+                tf.keras.layers.GlobalAveragePooling1D(name="target_mv_title_1d"),
             ], name="target_mv_title_emb_model"
         )
 
@@ -455,12 +450,12 @@ class Candidate_Tower(tf.keras.Model):
             self._cross_layer = tfrs.layers.dcn.Cross(
                 projection_dim=projection_dim,
                 kernel_initializer="glorot_uniform", 
-                name="user_context_cross_layer"
+                name="candidate_cross_layer"
             )
         else:
             self._cross_layer = None
 
-        self.dense_layers = tf.keras.Sequential(name="user_context_dense_layers")
+        self.dense_layers = tf.keras.Sequential(name="candidate_dense_layers")
         
         # Use the ReLU activation for all but the last layer.
         for layer_size in layer_sizes[:-1]:
@@ -514,7 +509,10 @@ class Candidate_Tower(tf.keras.Model):
                 self.target_mv_id_embedding(data["target_movie_id"]),
                 # self.target_mv_rating_embedding(data["target_movie_rating"]),
                 # self.target_rating_ts_embedding(data["target_rating_timestamp"]),
-                self.target_mv_genre_embedding(data["target_movie_genre"]),
+                
+                # self.target_mv_genre_embedding(data["target_movie_genre"]),
+                # self.target_mv_genre_embedding(tf.reshape(data["target_movie_genre"], [-1])),
+                
                 self.target_mv_year_embedding(data["target_movie_year"]),
                 self.target_mv_title_embedding(data["target_movie_title"]),
                 
@@ -586,13 +584,13 @@ class TheTwoTowers(tfrs.models.Model):
                 .batch(128)
                 # .cache()
                 .map(lambda x: (x['target_movie_id'], self.candidate_tower(x))),
+                ks=(10, 50) # 10, 50, 100
             ),
-            #     ks=(10, 50, 100)),
-            # batch_metrics=[
-            #     tf.keras.metrics.TopKCategoricalAccuracy(10, name='batch_categorical_accuracy_at_10'), 
-            #     tf.keras.metrics.TopKCategoricalAccuracy(50, name='batch_categorical_accuracy_at_50')
-            # ],
-            # remove_accidental_hits=False,
+            batch_metrics=[
+                tf.keras.metrics.TopKCategoricalAccuracy(10, name='batch_cat_acc@10'), 
+                tf.keras.metrics.TopKCategoricalAccuracy(50, name='batch_cat_acc@50')
+            ],
+            remove_accidental_hits=False,
             name="two_tower_retreival_task"
         )
 

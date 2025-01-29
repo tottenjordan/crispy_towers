@@ -1,8 +1,8 @@
-tensorflow==2.11.0
-tensorflow-datasets
+tensorflow[and-cuda]==2.11.0
 tensorflow-recommenders==0.7.2
-google-cloud-aiplatform==1.71.0
-google-cloud-storage==2.18.0
+google-cloud-aiplatform==1.60.0
+google-cloud-storage==2.19.0
+tensorflow-datasets
 tensorboard
 tensorboard-plugin-profile
 tensorboard-plugin-wit
